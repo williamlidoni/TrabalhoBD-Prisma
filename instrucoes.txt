@@ -1,0 +1,123 @@
+=====================================================
+ RESUMO DO PROJETO - PRISMA COM SQLITE E TYPESCRIPT
+=====================================================
+
+Este arquivo documenta os passos para configurar um projeto Node.js com Prisma,
+usando SQLite como banco de dados e TypeScript para criar um script de CRUD.
+
+---
+# 1. CONFIGURAÇÃO INICIAL DO PROJETO
+---
+
+Começamos do zero e instalamos todas as dependências necessárias.
+
+// 1. Inicia um projeto Node.js
+npm init -y
+
+// 2. Instala as dependências de desenvolvimento (Prisma, TypeScript, etc.)
+npm install prisma typescript ts-node @types/node --save-dev
+
+// 3. Instala o Prisma Client (para usar no código)
+npm install @prisma/client
+
+// 4. Inicia o TypeScript (cria o tsconfig.json)
+npx tsc --init
+
+// 5. Inicia o Prisma (cria a pasta /prisma e o .env)
+npx prisma init
+
+
+---
+# 2. CONFIGURAÇÃO DO AMBIENTE (.env)
+---
+
+Para o Prisma saber qual banco de dados usar (SQLite), configuramos o arquivo .env:
+
+// Arquivo: .env
+DATABASE_URL="file:./dev.db"
+
+
+---
+# 3. DEFINIÇÃO DOS MODELS (schema.prisma)
+---
+
+Este é o arquivo principal do Prisma. É aqui que você define suas tabelas (models).
+Se você quiser modificar seu banco de dados (ex: adicionar uma nova coluna ou tabela),
+você deve:
+1. Editar este arquivo.
+2. Rodar o comando "npx prisma migrate dev".
+
+// Arquivo: prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Definimos o provider como SQLite
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Usuário baseado no seu SQL
+model Usuario {
+  id      Int      @id @default(autoincrement())
+  nome    String?
+  email   String?  @unique
+  tarefas Tarefa[]
+
+  @@map("usuarios") // Mapeia para a tabela 'usuarios'
+}
+
+// Modelo de Tarefa baseado no seu SQL
+model Tarefa {
+  id        Int      @id @default(autoincrement())
+  descricao String?
+  idUsuario Int?     @map("id_usuario")
+  usuario   Usuario? @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario])
+  @@map("tarefas") // Mapeia para a tabela 'tarefas'
+}
+
+
+---
+# 4. APLICANDO AS MIGRAÇÕES
+---
+
+Depois de definir os models no schema, usamos este comando para o Prisma
+criar o banco de dados (o arquivo dev.db) e as tabelas dentro dele.
+
+Este comando lê o "schema.prisma" e atualiza o banco de dados:
+// npx prisma migrate dev
+
+
+---
+# 5. ARQUIVO DE TESTE (src/script.ts)
+---
+
+Este é o arquivo que criamos para executar todas as operações do CRUD
+(Create, Read, Update, Delete) usando os métodos do Prisma.
+
+// Arquivo: src/script.ts
+
+
+---
+# 6. RESUMO DE COMANDOS ÚTEIS
+---
+
+// Inicia o Prisma no projeto
+npx prisma init
+
+// Aplica as mudanças do "schema.prisma" no banco de dados
+npx prisma migrate dev
+
+// Gera o Prisma Client (normalmente feito pelo migrate)
+npx prisma generate
+
+// Executa o nosso script de teste
+npx ts-node src/script.ts
+
+// ABRE O "SISTEMA NA WEB" (O CRUD automático do Prisma)
+npx prisma studio
+
+```

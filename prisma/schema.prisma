@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Usuário baseado no seu SQL
+model Usuario {
+  id      Int      @id @default(autoincrement()) // autoincrement() funciona para SQLite
+  nome    String?
+  email   String?  @unique
+  tarefas Tarefa[]
+
+  @@map("usuarios") // Mapeia para a tabela 'usuarios'
+}
+
+// Modelo de Tarefa baseado no seu SQL
+model Tarefa {
+  id        Int      @id @default(autoincrement())
+  descricao String?
+  idUsuario Int?     @map("id_usuario")
+  usuario   Usuario? @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario]) // Adiciona um índice para a chave estrangeira
+  @@map("tarefas") // Mapeia para a tabela 'tarefas'
+}
