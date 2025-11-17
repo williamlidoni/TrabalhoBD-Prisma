@@ -1,29 +1,37 @@
+// Define o tipo de "cliente" que o Prisma vai gerar.
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" // Vai gerar código JavaScript/TypeScript.
 }
 
+// Configura a conexão com o banco de dados.
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "sqlite" // Diz ao Prisma que estamos usando SQLite.
+  url      = env("DATABASE_URL")  // Diz onde encontrar o banco (lendo do arquivo .env).
 }
 
-// Modelo de Usuário baseado no seu SQL
+// Modelo de Usuário baseado no SQL
 model Usuario {
-  id      Int      @id @default(autoincrement()) // autoincrement() funciona para SQLite
-  nome    String?
-  email   String?  @unique
-  tarefas Tarefa[]
+  id      Int      @id @default(autoincrement()) // Chave primária (ID) que se auto-incrementa
+  nome    String?  // Coluna para o nome (o '?' significa que pode ser nulo/vazio)
+  email   String?  @unique  // Coluna para o email (tem que ser único)
+  tarefas Tarefa[]  // "Campo virtual": É um atalho para ver as tarefas deste usuário
 
   @@map("usuarios") // Mapeia para a tabela 'usuarios'
 }
 
-// Modelo de Tarefa baseado no seu SQL
+// Modelo de Tarefa baseado no SQL
 model Tarefa {
   id        Int      @id @default(autoincrement())
   descricao String?
-  idUsuario Int?     @map("id_usuario")
+  idUsuario Int?     @map("id_usuario")  // Chave estrangeira (o 'ID' do usuário dono)
   usuario   Usuario? @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
 
-  @@index([idUsuario]) // Adiciona um índice para a chave estrangeira
+  // "Campo virtual": É um atalho para ver o usuário dono desta tarefa.
+  // 'fields' diz qual coluna local guarda o ID (idUsuario).
+  // 'references' diz qual coluna na outra tabela ele se refere (id do Usuario).
+  // 'onDelete: Cascade' significa: "Se o usuário for deletado, delete esta tarefa também"
+
+
+  @@index([idUsuario]) // Adiciona um índice para buscas por 'idUsuario' serem mais rápidas
   @@map("tarefas") // Mapeia para a tabela 'tarefas'
 }
